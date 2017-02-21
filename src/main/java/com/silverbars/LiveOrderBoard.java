@@ -6,8 +6,8 @@ public class LiveOrderBoard {
 
     private final OrderInventory orderInventory;
 
-    public LiveOrderBoard() {
-        this.orderInventory = new OrderInventory();
+    public LiveOrderBoard(final OrderInventory orderInventory) {
+        this.orderInventory = orderInventory;
     }
 
     public UUID registerOrder(final Order order) {

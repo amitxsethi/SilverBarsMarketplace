@@ -1,6 +1,9 @@
 package com.silverbars;
 
+import static com.silverbars.OrderType.BUY;
+import static com.silverbars.OrderType.SELL;
 import static java.math.BigDecimal.valueOf;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,23 +19,23 @@ public class OrderInventoryTest {
     @Test
     public void shouldMergeSamePriceOrders() {
         final BigDecimal pricePerKg = valueOf(300);
-        final OrderType buy = OrderType.BUY;
-        Order order1 = new Order("user1", buy, valueOf(10), pricePerKg);
-        Order order2 = new Order("user2", buy, valueOf(20), pricePerKg);
+        final Order order1 = OrderBuilder.order().by("user1").ofType(BUY).forQuantityInKg(valueOf(10)).atPricePerKg(pricePerKg).create();
+        final Order order2 = OrderBuilder.order().by("user2").ofType(BUY).forQuantityInKg(valueOf(20)).atPricePerKg(pricePerKg).create();
 
         final List<Order> orders = new OrderInventory().mergeOrdersOfSamePrice(Stream.of(order1, order2));
-        Assert.assertEquals(1, orders.size());
-        Assert.assertEquals(valueOf(30), orders.get(0).getQuantityInKg());
+
+        assertEquals(1, orders.size());
+        assertEquals(valueOf(30), orders.get(0).getQuantityInKg());
     }
 
     @Test
     public void shouldNotMergeDifferentPriceOrders() {
-        final OrderType sell = OrderType.SELL;
-        Order order1 = new Order("user1", sell, valueOf(10), valueOf(300.1));
-        Order order2 = new Order("user2", sell, valueOf(20), valueOf(300.2));
+        final Order order1 = OrderBuilder.order().by("user1").ofType(SELL).forQuantityInKg(valueOf(10.1)).atPricePerKg(valueOf(100.1)).create();
+        final Order order2 = OrderBuilder.order().by("user2").ofType(SELL).forQuantityInKg(valueOf(20.2)).atPricePerKg(valueOf(100.2)).create();
 
         final List<Order> orders = new OrderInventory().mergeOrdersOfSamePrice(Stream.of(order1, order2));
-        Assert.assertEquals(2, orders.size());
+
+        assertEquals(2, orders.size());
     }
 
 }

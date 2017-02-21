@@ -81,8 +81,12 @@ public class OrderInventory {
             final BigDecimal[] totalOrderQuantity = {ZERO};
             final Order orderOfSamePricePerKg = ordersOfSamePricePerKg.get(0);
             ordersOfSamePricePerKg.forEach(order -> totalOrderQuantity[0] = totalOrderQuantity[0].add(order.getQuantityInKg()));
-            mergedOrders.add(new Order("merged_orders", orderOfSamePricePerKg.getOrderType(),
-                    totalOrderQuantity[0], orderOfSamePricePerKg.getPricePerKg()));
+            mergedOrders.add(OrderBuilder.order()
+                    .by("MergedOrder")
+                    .ofType(orderOfSamePricePerKg.getOrderType())
+                    .forQuantityInKg(totalOrderQuantity[0])
+                    .atPricePerKg(orderOfSamePricePerKg.getPricePerKg()).create()
+            );
         });
         collect.values().stream().filter(orderList->orderList.size()==1).forEach(
                 singleOrderList->mergedOrders.add(singleOrderList.get(0)));

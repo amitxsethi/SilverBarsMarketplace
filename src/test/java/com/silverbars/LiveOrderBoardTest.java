@@ -1,5 +1,7 @@
 package com.silverbars;
 
+import static com.silverbars.OrderType.BUY;
+import static com.silverbars.OrderType.SELL;
 import static java.math.BigDecimal.valueOf;
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
@@ -10,31 +12,30 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import com.silverbars.Order;
-import com.silverbars.OrderNotFoundException;
-import com.silverbars.OrderType;
 import org.junit.Before;
 import org.junit.Test;
 
 public class LiveOrderBoardTest {
 
     private LiveOrderBoard liveOrderBoard;
+    private OrderBuilder orderBuilder;
 
     @Before
     public void setUp(){
-        liveOrderBoard = new LiveOrderBoard();
+        liveOrderBoard = new LiveOrderBoard(new OrderInventory());
+        orderBuilder = OrderBuilder.order();
     }
 
     @Test
     public void shouldRegisterOrder() {
 
-        final String userId = "user1";
-        final OrderType buy = OrderType.BUY;
-        final BigDecimal quantityInKg = valueOf(50.5);
-        final BigDecimal pricePerKg = valueOf(302);
-
         //Given
-        final Order order = new Order(userId, buy, quantityInKg, pricePerKg);
+        final Order order = orderBuilder
+                .by("user1")
+                .ofType(BUY)
+                .forQuantityInKg(valueOf(50.5))
+                .atPricePerKg(valueOf(302))
+                .create();
 
         //when
         final UUID order1Id = liveOrderBoard.registerOrder(order);
@@ -54,13 +55,14 @@ public class LiveOrderBoardTest {
 
     @Test
     public void shouldCancelOrder() {
-        final String userId = "user1";
-        final OrderType buy = OrderType.BUY;
-        final BigDecimal quantityInKg = valueOf(50.5);
-        final BigDecimal pricePerKg = valueOf(302);
 
         //Given
-        final Order order = new Order(userId, buy, quantityInKg, pricePerKg);
+        final Order order = orderBuilder
+                .by("user1")
+                .ofType(BUY)
+                .forQuantityInKg(valueOf(50.5))
+                .atPricePerKg(valueOf(302))
+                .create();
         final UUID orderId = liveOrderBoard.registerOrder(order);
         assertEquals(1, liveOrderBoard.totalOrders());
 
@@ -88,32 +90,31 @@ public class LiveOrderBoardTest {
     }
 
     @Test
-    public void testSummarize() {
+    public void shouldSummarizeOrdersAndSortThemBasedOnPricePerKgAscForSellAndDescForBuy() {
 
         //Given
-        final Order order1 = new Order("user1", OrderType.SELL, valueOf(3.5),  valueOf(306));
+        final Order order1 = orderBuilder.by("user1").ofType(SELL).forQuantityInKg(valueOf(3.5)).atPricePerKg(valueOf(306)).create();
         liveOrderBoard.registerOrder(order1);
 
-        final Order order2 = new Order("user2", OrderType.SELL, valueOf(1.2),  valueOf(310));
+        final Order order2 = orderBuilder.by("user2").ofType(SELL).forQuantityInKg(valueOf(1.2)).atPricePerKg(valueOf(310)).create();
         liveOrderBoard.registerOrder(order2);
 
-        final Order order3 = new Order("user3", OrderType.SELL, valueOf(1.5),  valueOf(307));
+        final Order order3 = orderBuilder.by("user3").ofType(SELL).forQuantityInKg(valueOf(1.5)).atPricePerKg(valueOf(307)).create();
         liveOrderBoard.registerOrder(order3);
 
-        final Order order4 = new Order("user4", OrderType.SELL, valueOf(2.0),  valueOf(306));
+        final Order order4 = orderBuilder.by("user4").ofType(SELL).forQuantityInKg(valueOf(2.0)).atPricePerKg(valueOf(306)).create();
         liveOrderBoard.registerOrder(order4);
 
-        //Given
-        final Order order5 = new Order("user5", OrderType.BUY, valueOf(3.5),  valueOf(306));
+        final Order order5 = orderBuilder.by("user5").ofType(BUY).forQuantityInKg(valueOf(3.5)).atPricePerKg(valueOf(306)).create();
         liveOrderBoard.registerOrder(order5);
 
-        final Order order6 = new Order("user6", OrderType.BUY, valueOf(1.2),  valueOf(310));
+        final Order order6 = orderBuilder.by("user6").ofType(BUY).forQuantityInKg(valueOf(1.2)).atPricePerKg(valueOf(310)).create();
         liveOrderBoard.registerOrder(order6);
 
-        final Order order7 = new Order("user7", OrderType.BUY, valueOf(1.5),  valueOf(307));
+        final Order order7 = orderBuilder.by("user7").ofType(BUY).forQuantityInKg(valueOf(1.5)).atPricePerKg(valueOf(307)).create();
         liveOrderBoard.registerOrder(order7);
 
-        final Order order8 = new Order("user8", OrderType.BUY, valueOf(2.0),  valueOf(306));
+        final Order order8 = orderBuilder.by("user8").ofType(BUY).forQuantityInKg(valueOf(2.0)).atPricePerKg(valueOf(306)).create();
         liveOrderBoard.registerOrder(order8);
 
         final String expectedSummary =
